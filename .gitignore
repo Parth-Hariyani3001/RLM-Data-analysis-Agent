@@ -32,3 +32,5 @@ graphify-out/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+.cursor
