@@ -14,6 +14,7 @@ export function DashboardPage() {
   const [isUploading, setIsUploading] = useState(false)
 
   const totalRows = datasets?.reduce((sum, d) => sum + (d.row_count ?? 0), 0) ?? 0
+  const hasDatasets = Boolean(datasets && datasets.length > 0)
 
   const handleUpload = async (file: File) => {
     setIsUploading(true)
@@ -30,58 +31,50 @@ export function DashboardPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto">
-      <header className="flex flex-col gap-4">
-        <div className="max-w-lg">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Your data workspace
-          </h1>
-          <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-muted-foreground">
-            Upload a spreadsheet and ask questions in plain language. The agent
-            writes code, inspects results, and shows its reasoning as it works.
+      <header className="max-w-xl">
+        <h1 className="text-[1.75rem] leading-tight font-semibold tracking-tight">
+          Datasets
+        </h1>
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted-foreground">
+          Drop a spreadsheet, then ask a question. The agent writes Python
+          against the file until it has an answer.
+        </p>
+        {hasDatasets && (
+          <p className="mt-3 text-sm text-muted-foreground">
+            {datasets!.length} {datasets!.length === 1 ? "file" : "files"},{" "}
+            {formatNumber(totalRows)} rows
           </p>
-        </div>
-
-        {datasets && datasets.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            <span className="stat-chip">
-              <strong>{datasets.length}</strong> dataset{datasets.length === 1 ? "" : "s"}
-            </span>
-            <span className="stat-chip">
-              <strong>{formatNumber(totalRows)}</strong> total rows
-            </span>
-          </div>
         )}
       </header>
 
       <UploadZone onUpload={handleUpload} isUploading={isUploading} />
 
-      <section>
-        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
-          {datasets && datasets.length > 0
-            ? "Recent datasets"
-            : "No datasets yet"}
-        </h2>
-
+      <section className="flex min-h-0 flex-col">
         {isLoading ? (
-          <div className="flex flex-col gap-2">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <Skeleton key={index} className="h-[4.5rem] rounded-lg" />
+          <div className="flex flex-col gap-px overflow-hidden border border-border">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-12 rounded-none" />
             ))}
           </div>
-        ) : datasets && datasets.length > 0 ? (
-          <div className="panel overflow-hidden">
-            <div className="divide-y divide-border/40">
-              {datasets.map((dataset) => (
+        ) : hasDatasets ? (
+          <div className="overflow-hidden border border-border">
+            <div className="hidden grid-cols-[minmax(0,1fr)_7rem_7rem_6rem_2.5rem] gap-3 border-b border-border bg-card px-4 py-2 text-sm text-muted-foreground sm:grid">
+              <span>File</span>
+              <span className="text-right">Rows</span>
+              <span className="text-right">Columns</span>
+              <span>Status</span>
+              <span className="sr-only">Actions</span>
+            </div>
+            <div className="greenbar">
+              {datasets!.map((dataset) => (
                 <DatasetCard key={dataset.id} dataset={dataset} />
               ))}
             </div>
           </div>
         ) : (
-          <div className="panel-inset px-6 py-10 text-center">
-            <p className="text-sm text-muted-foreground">
-              Upload a CSV or XLSX file above to create your first dataset.
-            </p>
-          </div>
+          <p className="border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+            No files yet. Upload a CSV or XLSX to create the first dataset.
+          </p>
         )}
       </section>
     </div>

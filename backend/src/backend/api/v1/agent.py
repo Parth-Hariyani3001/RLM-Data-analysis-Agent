@@ -56,6 +56,7 @@ async def ask_dataset(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # Check the dataset
     dataset = await db.scalar(
         select(Dataset).where(
             Dataset.id == dataset_id,
@@ -63,6 +64,7 @@ async def ask_dataset(
         )
     )
 
+    # Dataset Validations
     if dataset is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -75,6 +77,7 @@ async def ask_dataset(
             detail=f"Dataset is not ready (status: {dataset.status.value})",
         )
 
+    # Get the LLM Provider
     try:
         create_provider()
     except ValueError as exc:
@@ -83,6 +86,7 @@ async def ask_dataset(
             detail=str(exc),
         ) from exc
 
+    # Check the chat session
     if body.session_id is not None:
         session = await chat_service.get_session(
             db,
@@ -90,13 +94,16 @@ async def ask_dataset(
             dataset_id=dataset_id,
             user_id=current_user.id,
         )
+
         if session is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Chat session not found",
             )
+
         session_id = session.id
     else:
+        # First message
         session = await chat_service.create_session(
             db,
             dataset_id=dataset_id,
@@ -114,6 +121,7 @@ async def ask_dataset(
         async def on_step(step: RLMStep) -> None:
             if step.type.value == "final":
                 return
+
             await queue.put(_step_payload(step))
 
         async def execute() -> None:

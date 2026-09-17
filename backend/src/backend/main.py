@@ -21,6 +21,7 @@ def create_app() -> FastAPI:
         debug=settings.debug,
         lifespan=lifespan,
     )
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -29,6 +30,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(api_router, prefix="/api/v1")
+
     return app
 
 
@@ -37,4 +39,5 @@ app = create_app()
 
 def run() -> None:
     import uvicorn
-    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=settings.debug)
+    uvicorn.run("backend.main:app", host="0.0.0.0",
+                port=8000, reload=settings.debug)

@@ -107,6 +107,18 @@ class AnalysisTools:
         rows = await self.analyzer.filter(expression)
         return rows[:limit]
 
+    async def sort_rows(
+        self,
+        column: str,
+        ascending: bool = True,
+        limit: int = 10,
+    ) -> Any:
+        return await self.analyzer.sort_rows(
+            column,
+            ascending=ascending,
+            limit=limit,
+        )
+
     async def analyze(self) -> Any:
         return _serialize(await self.analyzer.analyze())
 
@@ -200,6 +212,7 @@ class ToolRegistry:
             "describe": self.tools.describe,
             "describe_column": self.tools.describe_column,
             "filter_rows": self.tools.filter_rows,
+            "sort_rows": self.tools.sort_rows,
             "analyze": self.tools.analyze,
             "quality_report": self.tools.quality_report,
             "correlation": self.tools.correlation,

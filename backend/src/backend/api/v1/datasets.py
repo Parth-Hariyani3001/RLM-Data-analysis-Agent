@@ -48,7 +48,8 @@ async def upload_dataset(
     source_type = ALLOWED_EXTENSIONS.get(extension)
 
     if source_type is None:
-        raise HTTPException(status_code=400, detail="Only CSV and XLSX files are supported")
+        raise HTTPException(
+            status_code=400, detail="Only CSV and XLSX files are supported")
 
     dataset_id = uuid.uuid4()
     storage_dir = Path(settings.storage_path) / "datasets" / str(dataset_id)
@@ -67,7 +68,9 @@ async def upload_dataset(
                         status_code=413,
                         detail=f"File exceeds {settings.max_upload_size_mb} MB",
                     )
+
                 output.write(chunk)
+
     except Exception:
         if file_path.exists():
             file_path.unlink()
@@ -86,12 +89,14 @@ async def upload_dataset(
         user_id=current_user.id,
         type=JobType.INGESTION,
     )
+
     db.add(job)
     await db.commit()
     await db.refresh(job)
 
     task = inspect_dataset_task.delay(str(dataset.id), str(job.id))
     job.celery_task_id = task.id
+
     await db.commit()
     await db.refresh(job)
 

@@ -22,6 +22,7 @@ async def _run_ingestion(dataset_id: str, job_id: str) -> None:
 
             if dataset is None:
                 raise ValueError(f"Dataset not found: {dataset_id}")
+
             if job is None:
                 raise ValueError(f"Job not found: {job_id}")
 
@@ -29,15 +30,18 @@ async def _run_ingestion(dataset_id: str, job_id: str) -> None:
             job.progress = 10
             job.started_at = datetime.now(timezone.utc)
             dataset.status = DatasetStatus.PROCESSING
+
             await db.commit()
 
             try:
-                logger.info("dataset_ingestion_started", dataset_id=dataset_id, job_id=job_id)
+                logger.info("dataset_ingestion_started",
+                            dataset_id=dataset_id, job_id=job_id)
 
                 if dataset.file_path is None:
                     raise ValueError("Dataset has no file path")
 
-                result = inspect_dataset(dataset.source_type, dataset.file_path)
+                result = inspect_dataset(
+                    dataset.source_type, dataset.file_path)
 
                 dataset.row_count = result["row_count"]
                 dataset.column_count = result["column_count"]
@@ -47,20 +51,23 @@ async def _run_ingestion(dataset_id: str, job_id: str) -> None:
                 job.status = JobStatus.COMPLETED
                 job.progress = 100
                 job.completed_at = datetime.now(timezone.utc)
+
                 await db.commit()
 
-                logger.info("dataset_ingestion_completed", dataset_id=dataset_id, job_id=job_id)
+                logger.info("dataset_ingestion_completed",
+                            dataset_id=dataset_id, job_id=job_id)
 
             except Exception as exc:
-                logger.exception("dataset_ingestion_failed", dataset_id=dataset_id, job_id=job_id)
+                logger.exception("dataset_ingestion_failed",
+                                 dataset_id=dataset_id, job_id=job_id)
 
                 dataset.status = DatasetStatus.FAILED
                 dataset.error_message = str(exc)
                 job.status = JobStatus.FAILED
                 job.error_message = str(exc)
                 job.completed_at = datetime.now(timezone.utc)
-                await db.commit()
 
+                await db.commit()
                 raise
     finally:
         # Prevent pooled asyncpg connections from outliving this asyncio.run() loop.

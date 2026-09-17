@@ -25,7 +25,6 @@ def detect_csv_encoding(path: str | Path) -> str:
         return _DEFAULT_ENCODING
 
     encoding = result.encoding.lower().replace("_", "-")
-
     if encoding in {"utf-8", "utf8", "ascii"}:
         return "utf-8"
 

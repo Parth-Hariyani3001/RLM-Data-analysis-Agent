@@ -34,6 +34,7 @@ def create_access_token(subject: str) -> str:
         "sub": subject,
         "exp": expire,
     }
+
     return jwt.encode(
         payload,
         settings.jwt_secret_key,

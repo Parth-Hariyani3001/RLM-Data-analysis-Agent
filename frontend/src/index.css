@@ -1,12 +1,13 @@
-@import url("https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..800,0..1,0..1,0..1&display=swap");
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans: "Recursive", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Recursive", ui-monospace, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -26,74 +27,75 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-surface: var(--surface);
-  --color-surface-foreground: var(--surface-foreground);
-  --color-warm: var(--warm);
-  --color-warm-foreground: var(--warm-foreground);
+  --color-bar: var(--bar);
+  --color-bar-foreground: var(--bar-foreground);
 
-  --radius-sm: calc(var(--radius) * 0.75);
-  --radius-md: calc(var(--radius) * 0.875);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-xl: calc(var(--radius) * 1.4);
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(0.985 0.004 265);
-  --foreground: oklch(0.22 0.02 265);
-  --card: oklch(1 0.002 265);
-  --card-foreground: oklch(0.22 0.02 265);
-  --popover: oklch(1 0.002 265);
-  --popover-foreground: oklch(0.22 0.02 265);
-  --primary: oklch(0.48 0.18 275);
-  --primary-foreground: oklch(0.98 0.01 275);
-  --secondary: oklch(0.94 0.01 265);
-  --secondary-foreground: oklch(0.28 0.02 265);
-  --muted: oklch(0.95 0.008 265);
-  --muted-foreground: oklch(0.48 0.02 265);
-  --accent: oklch(0.94 0.02 275);
-  --accent-foreground: oklch(0.28 0.03 275);
-  --destructive: oklch(0.55 0.2 25);
-  --border: oklch(0.88 0.012 265);
-  --input: oklch(0.9 0.01 265);
-  --ring: oklch(0.48 0.18 275);
-  --surface: oklch(0.97 0.006 265);
-  --surface-foreground: oklch(0.3 0.02 265);
-  --warm: oklch(0.62 0.1 70);
-  --warm-foreground: oklch(0.28 0.04 70);
+  /* Cool print paper, pine ink, green-bar stripe, not cream or purple SaaS */
+  --radius: 0.2rem;
+  --background: #eef3f0;
+  --foreground: #1c2b26;
+  --card: #f7faf8;
+  --card-foreground: #1c2b26;
+  --popover: #f7faf8;
+  --popover-foreground: #1c2b26;
+  --primary: #1f5c45;
+  --primary-foreground: #f4fbf7;
+  --secondary: #dce8e0;
+  --secondary-foreground: #1c2b26;
+  --muted: #e3ece6;
+  --muted-foreground: #4d6459;
+  --accent: #dce8e0;
+  --accent-foreground: #1c2b26;
+  --destructive: #a33b32;
+  --border: #c5d4cb;
+  --input: #c5d4cb;
+  --ring: #1f5c45;
+  --bar: #d4e4d8;
+  --bar-foreground: #1c2b26;
+  --printout-stripe: color-mix(in srgb, #1f5c45 10%, #f7faf8);
   color-scheme: light;
 }
 
 .dark {
-  --background: oklch(0.11 0.012 265);
-  --foreground: oklch(0.93 0.012 265);
-  --card: oklch(0.14 0.014 265);
-  --card-foreground: oklch(0.93 0.012 265);
-  --popover: oklch(0.13 0.014 265);
-  --popover-foreground: oklch(0.93 0.012 265);
-  --primary: oklch(0.68 0.16 275);
-  --primary-foreground: oklch(0.98 0.01 275);
-  --secondary: oklch(0.19 0.016 265);
-  --secondary-foreground: oklch(0.9 0.012 265);
-  --muted: oklch(0.2 0.014 265);
-  --muted-foreground: oklch(0.62 0.02 265);
-  --accent: oklch(0.22 0.025 275);
-  --accent-foreground: oklch(0.93 0.012 265);
-  --destructive: oklch(0.6 0.2 25);
-  --border: oklch(0.26 0.016 265);
-  --input: oklch(0.2 0.016 265);
-  --ring: oklch(0.68 0.16 275);
-  --surface: oklch(0.16 0.015 265);
-  --surface-foreground: oklch(0.88 0.012 265);
-  --warm: oklch(0.72 0.1 70);
-  --warm-foreground: oklch(0.18 0.03 70);
+  --background: #121a16;
+  --foreground: #dce8e1;
+  --card: #18211c;
+  --card-foreground: #dce8e1;
+  --popover: #18211c;
+  --popover-foreground: #dce8e1;
+  --primary: #8fbfa6;
+  --primary-foreground: #121a16;
+  --secondary: #223028;
+  --secondary-foreground: #dce8e1;
+  --muted: #1e2a24;
+  --muted-foreground: #8aa394;
+  --accent: #223028;
+  --accent-foreground: #dce8e1;
+  --destructive: #e07a72;
+  --border: #2c3c34;
+  --input: #2c3c34;
+  --ring: #8fbfa6;
+  --bar: #1a2420;
+  --bar-foreground: #dce8e1;
+  --printout-stripe: color-mix(in srgb, #8fbfa6 8%, #18211c);
   color-scheme: dark;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-variation-settings: "MONO" 0, "CASL" 0.12, "CRSV" 0.5, "slnt" 0;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: var(--font-sans);
   background: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
@@ -104,28 +106,34 @@ body {
   min-height: 100vh;
 }
 
-/* Ambient workspace depth — single layer, not grid + gradient */
-.workspace-bg {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, color-mix(in oklch, var(--primary) 10%, transparent), transparent),
-    radial-gradient(ellipse 60% 40% at 100% 100%, color-mix(in oklch, var(--warm) 6%, transparent), transparent),
-    var(--background);
+code,
+kbd,
+pre,
+.font-mono {
+  font-variation-settings: "MONO" 1, "CASL" 0, "CRSV" 0, "slnt" 0;
 }
 
-/* Panel with hairline edge */
 .panel {
   background: var(--card);
-  border: 1px solid color-mix(in oklch, var(--border) 80%, transparent);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
 }
 
-.panel-inset {
-  background: color-mix(in oklch, var(--muted) 70%, transparent);
-  border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
-  border-radius: var(--radius-md);
+.greenbar tbody tr:nth-child(even),
+.greenbar > li:nth-child(even),
+.greenbar > div:nth-child(even) {
+  background: var(--bar);
 }
 
-/* Page entrance — one moment, not per-card */
+.printout {
+  --row: 1.75rem;
+  background-color: var(--card);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--card) 0 var(--row),
+    var(--printout-stripe) var(--row) calc(var(--row) * 2)
+  );
+}
+
 @keyframes page-enter {
   from {
     opacity: 0;
@@ -136,7 +144,7 @@ body {
 }
 
 .page-enter {
-  animation: page-enter 0.4s ease-out;
+  animation: page-enter 0.35s ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -149,7 +157,7 @@ body {
   color: inherit;
 }
 
-.prose :where(p, li, strong, em, code):not(:where([class~="not-prose"] *)) {
+.prose :where(p, li, strong, em, code, th, td):not(:where([class~="not-prose"] *)) {
   color: inherit;
 }
 
@@ -158,42 +166,32 @@ body {
   margin-bottom: 0.5em;
 }
 
-.prose :where(code):not(:where([class~="not-prose"] *)) {
+.prose :where(h1, h2, h3, h4):not(:where([class~="not-prose"] *)) {
+  margin-top: 1em;
+  margin-bottom: 0.4em;
+}
+
+.prose :where(h1, h2, h3, h4):first-child:not(:where([class~="not-prose"] *)) {
+  margin-top: 0;
+}
+
+.prose :where(code):not(:where([class~="not-prose"] *)):not(:where(pre *)) {
   font-family: var(--font-mono);
+  font-variation-settings: "MONO" 1, "CASL" 0, "CRSV" 0, "slnt" 0;
   font-size: 0.85em;
-  background: color-mix(in oklch, var(--muted) 80%, var(--primary) 8%);
-  padding: 0.15rem 0.4rem;
-  border-radius: 0.3rem;
+  background: var(--muted);
+  padding: 0.12rem 0.3rem;
+  border-radius: var(--radius-sm);
 }
 
-/* Data table row hover */
-.data-row {
-  transition: background-color 0.15s ease;
+.prose :where(table):not(:where([class~="not-prose"] *)) {
+  border-color: var(--border);
 }
 
-.data-row:hover {
-  background: color-mix(in oklch, var(--primary) 6%, transparent);
+.prose :where(thead th):not(:where([class~="not-prose"] *)) {
+  border-color: var(--border);
 }
 
-/* Stat chip */
-.stat-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
-  border-radius: 9999px;
-  background: color-mix(in oklch, var(--muted) 85%, transparent);
-  border: 1px solid color-mix(in oklch, var(--border) 75%, transparent);
-  font-size: 0.8125rem;
-  color: var(--muted-foreground);
-}
-
-.stat-chip strong {
-  color: var(--foreground);
-  font-weight: 600;
-}
-
-/* Scrollable without a visible scrollbar */
 .scrollbar-invisible {
   scrollbar-width: none;
   -ms-overflow-style: none;

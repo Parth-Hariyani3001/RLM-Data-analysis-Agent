@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     llm_base_url: str = "http://localhost:1234/v1"
     llm_api_key: str = "lm-studio"
-    llm_model: str = "google/gemma-4-12b-qat"
+    llm_model: str = "google/gemma-4-e4b"
 
     storage_path: str = "storage"
     max_upload_size_mb: int = 500

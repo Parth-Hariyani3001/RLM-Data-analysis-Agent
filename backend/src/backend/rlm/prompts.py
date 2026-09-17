@@ -24,11 +24,12 @@ IMPORTANT:
 - If an analysis result is insufficient, perform another analysis step.
 - Keep intermediate reasoning concise.
 - The final answer must be based on actual tool results.
-
+- Do NOT use import statements. Tools are already available in the REPL.
+- Do NOT use markdown code fences for REPL execution — use <code> tags only.
 
 
 You can execute Python using the REPL.
-When you want to execute Python, return:
+When you want to execute Python, return ONLY:
 
 <code>
 your_python_code_here
@@ -36,14 +37,42 @@ your_python_code_here
 
 
 
-When you are ready to answer the user, return:
+When you are ready to answer the user, return ONLY:
 <final>
-your final answer here
+your final answer here (formatted as Markdown)
 </final>
 
 
 Only one of <code> or <final> should be returned at a time.
-Do not use markdown code fences; use <code> tags only.
+
+Final answers inside <final> tags should be formatted as Markdown for readability:
+- Start with a short summary line.
+- Use **bold** for key values and column names.
+- Use bullet lists for multiple findings.
+- Use Markdown tables when presenting tabular results (top-N rows, comparisons).
+- Use inline `code` for column names and expressions.
+
+Examples:
+
+User asks for column names → reply with:
+<code>
+print(await get_columns())
+</code>
+
+After you have enough evidence → reply with:
+<final>
+**Most expensive game:** Super Mario Bros — **$59.99**
+
+| Name | Price |
+|------|------:|
+| Super Mario Bros | 59.99 |
+</final>
+
+For ranking / "most expensive" / "highest" style questions:
+1. Inspect columns with get_columns or sample.
+2. Identify the price/value column and name column.
+3. Call sort_rows on the value column (ascending=False for highest).
+4. Return the answer in <final> tags, formatted as Markdown.
 """
 
 
@@ -58,7 +87,8 @@ Available analytical tools (call with await inside the REPL):
 - await value_counts(column, limit=20) -> top value frequencies for a column
 - await describe() -> statistical summary of all columns
 - await describe_column(column) -> detailed stats for one column
-- await filter_rows(expression, limit=100) -> filter rows using pandas query syntax
+- await filter_rows(expression, limit=100) -> filter rows using pandas query syntax, NOT SQL. Example: Price > 10 and Platform == 'PC'
+- await sort_rows(column, ascending=False, limit=10) -> top/bottom rows by a column (use this for "most expensive" / highest / lowest)
 - await analyze() -> full dataset analysis with per-column stats and quality
 - await quality_report() -> data quality report (missing values, duplicates)
 - await correlation(method="pearson") -> correlation matrix for numeric columns
@@ -70,17 +100,11 @@ Available analytical tools (call with await inside the REPL):
 
 
 def build_initial_prompt(
-
     question: str,
-
     dataset_context: str | None = None,
-
 ) -> str:
-
     context_block = ""
-
     if dataset_context:
-
         context_block = f"""
 
 Dataset context:
@@ -104,6 +128,8 @@ Start by determining what information you need from the dataset.
 
 
 Use the available tools through the Python REPL.
+Reply with <code>...</code> or <final>...</final> only — no markdown code fences for REPL, no imports.
+Format final answers as Markdown inside <final> tags.
 
 """
 

@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import ReactMarkdown from "react-markdown"
+import { MarkdownContent } from "@/components/agent/MarkdownContent"
 import {
-  BrainCircuit,
   ChevronDown,
   MessageSquarePlus,
   SendHorizontal,
@@ -10,9 +9,6 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { StepTimeline } from "@/components/agent/StepTimeline"
-import { RunLogsPanel } from "@/components/agent/RunLogsPanel"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Bubble, BubbleContent } from "@/components/ui/bubble"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -37,12 +33,8 @@ import {
   InputGroupTextarea,
 } from "@/components/ui/input-group"
 import { Marker, MarkerContent, MarkerIcon } from "@/components/ui/marker"
-import {
-  Message,
-  MessageAvatar,
-  MessageContent,
-  MessageFooter,
-} from "@/components/ui/message"
+import { Bubble, BubbleContent } from "@/components/ui/bubble"
+import { Message, MessageContent } from "@/components/ui/message"
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -58,7 +50,7 @@ import {
   useChatSessions,
   useCreateChatSession,
 } from "@/hooks/useChatSessions"
-import type { ChatMessage, Dataset } from "@/types"
+import type { ChatMessage, ChatRunLog, Dataset } from "@/types"
 
 interface ChatPanelProps {
   dataset: Dataset
@@ -72,6 +64,30 @@ const SUGGESTED_PROMPTS = [
 
 function withoutFinalSteps(steps: ChatMessage["steps"]) {
   return steps?.filter((step) => step.type !== "final")
+}
+
+function runLogForMessage(
+  message: ChatMessage,
+  logs: ChatRunLog[] | undefined,
+): ChatRunLog | undefined {
+  const matched = logs?.find((log) => log.message_id === message.id)
+  if (matched) return matched
+  if (!message.usage) return undefined
+
+  return {
+    id: `usage-${message.id}`,
+    session_id: message.session_id ?? "",
+    message_id: message.id,
+    model: message.usage.model ?? null,
+    iterations: message.usage.iterations,
+    llm_calls: message.usage.llm_calls,
+    tool_calls: message.usage.tool_calls,
+    prompt_tokens: message.usage.prompt_tokens,
+    completion_tokens: message.usage.completion_tokens,
+    total_tokens: message.usage.total_tokens,
+    events: message.usage.events,
+    created_at: message.created_at ?? new Date().toISOString(),
+  }
 }
 
 export function ChatPanel({ dataset }: ChatPanelProps) {
@@ -177,6 +193,7 @@ export function ChatPanel({ dataset }: ChatPanelProps) {
           content: result.answer,
           steps: withoutFinalSteps(result.steps),
           iterations: result.iterations,
+          usage: result.usage,
         },
       ])
 
@@ -200,16 +217,11 @@ export function ChatPanel({ dataset }: ChatPanelProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border/50 bg-card/40">
-      <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
-        <div className="min-w-0">
-          <h2 className="truncate text-sm font-medium tracking-tight">
-            {activeSession?.title ?? "New chat"}
-          </h2>
-          <p className="truncate text-xs text-muted-foreground">
-            {dataset.name}
-          </p>
-        </div>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden border border-border bg-card">
+      <div className="relative z-10 flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-4 py-2 sm:px-8 lg:px-10">
+        <h2 className="min-w-0 truncate text-sm font-medium tracking-tight">
+          {activeSession?.title ?? "New chat"}
+        </h2>
 
         <div className="flex shrink-0 items-center gap-1.5">
           <DropdownMenu>
@@ -224,9 +236,7 @@ export function ChatPanel({ dataset }: ChatPanelProps) {
                 />
               }
             >
-              <span className="max-w-[8rem] truncate">
-                {activeSession?.title ?? "Chats"}
-              </span>
+              <span className="max-w-[8rem] truncate">Chats</span>
               <ChevronDown data-icon="inline-end" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-52">
@@ -275,18 +285,14 @@ export function ChatPanel({ dataset }: ChatPanelProps) {
         </div>
       </div>
 
-      {activeSessionId && (
-        <RunLogsPanel logs={sessionDetail?.run_logs ?? []} />
-      )}
-
       <MessageScrollerProvider autoScroll>
         <MessageScroller className="min-h-0 flex-1">
           <MessageScrollerViewport>
-            <MessageScrollerContent className="mx-auto w-full max-w-2xl px-4 py-5 sm:px-5">
+            <MessageScrollerContent className="w-full px-4 py-5 sm:px-8 lg:px-10">
               {showEmpty && (
                 <MessageScrollerItem messageId="empty">
-                  <Empty className="border-0 bg-transparent py-10">
-                    <EmptyHeader>
+                  <Empty className="items-start border-0 bg-transparent py-6 text-left">
+                    <EmptyHeader className="items-start">
                       <EmptyTitle>
                         {isReady
                           ? `Ask about ${dataset.name}`
@@ -294,19 +300,19 @@ export function ChatPanel({ dataset }: ChatPanelProps) {
                       </EmptyTitle>
                       <EmptyDescription>
                         {isReady
-                          ? "The agent writes and runs Python against this dataset."
+                          ? "The agent writes and runs Python against this file."
                           : "Chat opens once ingestion finishes."}
                       </EmptyDescription>
                     </EmptyHeader>
                     {isReady && (
                       <EmptyContent className="items-stretch">
-                        <div className="flex w-full flex-col gap-1">
+                        <div className="flex w-full flex-col gap-0 border-l-2 border-bar">
                           {SUGGESTED_PROMPTS.map((prompt) => (
                             <Button
                               key={prompt}
                               type="button"
                               variant="ghost"
-                              className="h-auto justify-start whitespace-normal px-3 py-2.5 text-left text-sm leading-snug text-muted-foreground hover:text-foreground"
+                              className="h-auto justify-start rounded-none px-3 py-2.5 text-left text-sm leading-snug font-normal whitespace-normal text-muted-foreground hover:bg-bar/60 hover:text-foreground"
                               onClick={() => void handleSubmit(prompt)}
                             >
                               {prompt}
@@ -319,71 +325,62 @@ export function ChatPanel({ dataset }: ChatPanelProps) {
                 </MessageScrollerItem>
               )}
 
-              {messages.map((message) => (
-                <MessageScrollerItem
-                  key={message.id}
-                  messageId={message.id}
-                  scrollAnchor={message.role === "user"}
-                >
-                  <Message align={message.role === "user" ? "end" : "start"}>
-                    {message.role === "assistant" && (
-                      <MessageAvatar>
-                        <Avatar className="size-8">
-                          <AvatarFallback className="bg-primary/15 text-primary [&_svg]:size-4">
-                            <BrainCircuit />
-                          </AvatarFallback>
-                        </Avatar>
-                      </MessageAvatar>
-                    )}
-                    <MessageContent>
-                      <Bubble
-                        variant={
-                          message.role === "user" ? "default" : "ghost"
-                        }
-                        align={message.role === "user" ? "end" : "start"}
-                        className={
-                          message.role === "assistant"
-                            ? "max-w-full"
-                            : undefined
-                        }
-                      >
-                        <BubbleContent
+              {messages.map((message) => {
+                const isUser = message.role === "user"
+                return (
+                  <MessageScrollerItem
+                    key={message.id}
+                    messageId={message.id}
+                    scrollAnchor={isUser}
+                  >
+                    <Message align={isUser ? "end" : "start"}>
+                      <MessageContent className={isUser ? "items-end" : "max-w-[min(56rem,100%)]"}>
+                        <Bubble
+                          variant={isUser ? "secondary" : "ghost"}
+                          align={isUser ? "end" : "start"}
                           className={
-                            message.role === "assistant"
-                              ? "w-full max-w-full"
-                              : undefined
+                            isUser
+                              ? "max-w-[min(42rem,85%)]"
+                              : "max-w-full"
                           }
                         >
-                          {message.role === "assistant" ? (
-                            <div className="prose prose-sm max-w-none">
-                              <ReactMarkdown>{message.content}</ReactMarkdown>
-                            </div>
-                          ) : (
-                            message.content
+                          <BubbleContent
+                            className={
+                              isUser
+                                ? undefined
+                                : "w-full max-w-none p-0"
+                            }
+                          >
+                            {isUser ? (
+                              <p className="text-sm leading-relaxed">
+                                {message.content}
+                              </p>
+                            ) : (
+                              <MarkdownContent>
+                                {message.content}
+                              </MarkdownContent>
+                            )}
+                          </BubbleContent>
+                        </Bubble>
+
+                        {!isUser &&
+                          ((withoutFinalSteps(message.steps)?.length ?? 0) >
+                            0 ||
+                            message.usage) && (
+                            <StepTimeline
+                              steps={withoutFinalSteps(message.steps) ?? []}
+                              iterations={message.iterations}
+                              runLog={runLogForMessage(
+                                message,
+                                sessionDetail?.run_logs,
+                              )}
+                            />
                           )}
-                        </BubbleContent>
-                      </Bubble>
-
-                      {message.role === "assistant" &&
-                        (withoutFinalSteps(message.steps)?.length ?? 0) >
-                          0 && (
-                          <StepTimeline
-                            steps={withoutFinalSteps(message.steps) ?? []}
-                            collapsible
-                          />
-                        )}
-
-                      {message.role === "assistant" &&
-                        message.iterations != null && (
-                          <MessageFooter>
-                            {message.iterations} iteration
-                            {message.iterations === 1 ? "" : "s"}
-                          </MessageFooter>
-                        )}
-                    </MessageContent>
-                  </Message>
-                </MessageScrollerItem>
-              ))}
+                      </MessageContent>
+                    </Message>
+                  </MessageScrollerItem>
+                )
+              })}
 
               {isStreaming && (
                 <MessageScrollerItem messageId="streaming">
@@ -392,9 +389,7 @@ export function ChatPanel({ dataset }: ChatPanelProps) {
                       <MarkerIcon>
                         <Spinner />
                       </MarkerIcon>
-                      <MarkerContent className="shimmer">
-                        Working…
-                      </MarkerContent>
+                      <MarkerContent>Working…</MarkerContent>
                     </Marker>
                     <StepTimeline
                       steps={steps.filter((step) => step.type !== "final")}
@@ -409,9 +404,8 @@ export function ChatPanel({ dataset }: ChatPanelProps) {
         </MessageScroller>
       </MessageScrollerProvider>
 
-      <div className="px-4 pb-4 sm:px-5">
-        <div className="mx-auto w-full max-w-2xl">
-          <InputGroup>
+      <div className="shrink-0 border-t border-border bg-card px-4 py-3 sm:px-8 lg:px-10">
+        <InputGroup className="h-auto items-end">
             <InputGroupTextarea
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
@@ -421,8 +415,8 @@ export function ChatPanel({ dataset }: ChatPanelProps) {
                   : "Waiting for dataset to finish processing"
               }
               disabled={!isReady || isStreaming}
-              rows={2}
-              className="min-h-[4.5rem]"
+              rows={1}
+              className="min-h-10 py-2.5"
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
                   event.preventDefault()
@@ -430,7 +424,7 @@ export function ChatPanel({ dataset }: ChatPanelProps) {
                 }
               }}
             />
-            <InputGroupAddon align="block-end" className="justify-end gap-1.5">
+            <InputGroupAddon align="inline-end" className="py-1.5 pr-1.5">
               {isStreaming ? (
                 <InputGroupButton
                   type="button"
@@ -455,7 +449,6 @@ export function ChatPanel({ dataset }: ChatPanelProps) {
               )}
             </InputGroupAddon>
           </InputGroup>
-        </div>
       </div>
     </div>
   )

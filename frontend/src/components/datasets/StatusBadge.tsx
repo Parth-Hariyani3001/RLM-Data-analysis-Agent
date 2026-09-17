@@ -3,12 +3,12 @@ import type { DatasetStatus, JobStatus } from "@/types"
 import { cn } from "@/lib/utils"
 
 const STATUS_STYLES: Record<string, string> = {
-  pending: "bg-amber-500/12 text-amber-300/90 border-amber-500/25",
-  processing: "bg-sky-500/12 text-sky-300/90 border-sky-500/25",
-  running: "bg-sky-500/12 text-sky-300/90 border-sky-500/25",
-  ready: "bg-emerald-500/12 text-emerald-300/90 border-emerald-500/25",
-  completed: "bg-emerald-500/12 text-emerald-300/90 border-emerald-500/25",
-  failed: "bg-red-500/12 text-red-300/90 border-red-500/25",
+  pending: "border-border bg-muted text-muted-foreground",
+  processing: "border-border bg-muted text-foreground",
+  running: "border-border bg-muted text-foreground",
+  ready: "border-primary/30 bg-bar text-primary",
+  completed: "border-primary/30 bg-bar text-primary",
+  failed: "border-destructive/30 bg-destructive/10 text-destructive",
 }
 
 interface StatusBadgeProps {
@@ -21,7 +21,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     <Badge
       variant="outline"
       className={cn(
-        "h-5 px-1.5 text-[0.6875rem] font-normal capitalize",
+        "h-5 rounded-sm px-1.5 text-[0.6875rem] font-normal capitalize",
         STATUS_STYLES[status],
         className,
       )}

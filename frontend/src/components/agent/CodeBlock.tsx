@@ -9,7 +9,7 @@ export function CodeBlock({ content, className }: CodeBlockProps) {
   return (
     <pre
       className={cn(
-        "overflow-x-auto rounded-md border border-border/50 bg-muted p-3 font-mono text-[0.6875rem] leading-relaxed text-foreground",
+        "overflow-x-auto border border-border bg-muted p-3 font-mono text-[0.6875rem] leading-relaxed text-foreground",
         className,
       )}
     >

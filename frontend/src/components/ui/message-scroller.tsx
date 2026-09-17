@@ -26,7 +26,7 @@ function MessageScroller({
     <MessageScrollerPrimitive.Root
       data-slot="message-scroller"
       className={cn(
-        "group/message-scroller relative flex size-full min-h-0 flex-col overflow-hidden",
+        "group/message-scroller relative flex min-h-0 w-full flex-1 flex-col overflow-hidden",
         className
       )}
       {...props}
@@ -57,7 +57,7 @@ function MessageScrollerContent({
   return (
     <MessageScrollerPrimitive.Content
       data-slot="message-scroller-content"
-      className={cn("flex h-max min-h-full flex-col gap-6", className)}
+      className={cn("flex h-max flex-col gap-5", className)}
       {...props}
     />
   )
@@ -73,7 +73,7 @@ function MessageScrollerItem({
       data-slot="message-scroller-item"
       scrollAnchor={scrollAnchor}
       className={cn(
-        "min-w-0 shrink-0 [contain-intrinsic-size:auto_10rem] [content-visibility:auto]",
+        "min-w-0 shrink-0",
         className
       )}
       {...props}

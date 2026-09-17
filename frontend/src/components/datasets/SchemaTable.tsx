@@ -56,8 +56,8 @@ export function SchemaTable({ schema }: SchemaTableProps) {
   }
 
   return (
-    <div className="scrollbar-invisible h-full min-h-0 overflow-y-auto rounded-md border border-border/30">
-      <Table>
+    <div className="scrollbar-invisible h-full min-h-0 overflow-y-auto">
+      <Table className="greenbar">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="h-8 text-xs">Column</TableHead>
@@ -66,7 +66,7 @@ export function SchemaTable({ schema }: SchemaTableProps) {
         </TableHeader>
         <TableBody>
           {columns.map((column) => (
-            <TableRow key={column.name} className="data-row">
+            <TableRow key={column.name} className="hover:bg-transparent">
               <TableCell className="py-2 text-xs font-medium">
                 {column.name}
               </TableCell>

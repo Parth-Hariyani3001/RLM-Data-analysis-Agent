@@ -117,6 +117,7 @@ export interface ChatMessage {
   content: string
   steps?: AgentStep[]
   iterations?: number
+  usage?: AgentUsageSummary
   session_id?: string
   created_at?: string
 }

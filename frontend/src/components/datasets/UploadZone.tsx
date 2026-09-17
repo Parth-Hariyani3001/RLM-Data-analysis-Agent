@@ -1,5 +1,4 @@
 import { useCallback, useRef, useState } from "react"
-import { CloudUpload, FileSpreadsheet } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
@@ -44,8 +43,8 @@ export function UploadZone({ onUpload, isUploading = false }: UploadZoneProps) {
   return (
     <div
       className={cn(
-        "panel relative overflow-hidden transition-colors duration-200",
-        isDragging && "border-primary/40 bg-primary/5",
+        "border border-dashed border-border bg-card px-5 py-6 transition-colors",
+        isDragging && "border-primary bg-bar",
       )}
       onDragOver={(event) => {
         event.preventDefault()
@@ -58,36 +57,14 @@ export function UploadZone({ onUpload, isUploading = false }: UploadZoneProps) {
         void handleFiles(event.dataTransfer.files)
       }}
     >
-      <div className="flex flex-col items-center gap-5 px-6 py-10 sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:py-8">
-        <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
-          <div
-            className={cn(
-              "flex size-12 items-center justify-center rounded-xl transition-colors",
-              isDragging
-                ? "bg-primary/15 text-primary"
-                : "bg-warm/10 text-warm",
-            )}
-          >
-            {isUploading ? (
-              <Spinner className="size-5" />
-            ) : (
-              <CloudUpload className="size-5" />
-            )}
-          </div>
-
-          <div className="text-center sm:text-left">
-            <h3 className="text-base font-medium">
-              {isUploading ? "Uploading…" : "Add a dataset"}
-            </h3>
-            <p className="mt-1 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Drop a CSV or XLSX file here, or browse from your computer.
-              Max 500 MB.
-            </p>
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground sm:justify-start">
-              <FileSpreadsheet className="size-3.5" />
-              <span>CSV, XLSX</span>
-            </div>
-          </div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-base font-medium">
+            {isUploading ? "Uploading…" : "Add a file"}
+          </h2>
+          <p className="mt-1 max-w-md text-sm leading-relaxed text-muted-foreground">
+            Drop a CSV or XLSX here, or browse. Maximum 500 MB.
+          </p>
         </div>
 
         <div className="shrink-0">
@@ -102,9 +79,9 @@ export function UploadZone({ onUpload, isUploading = false }: UploadZoneProps) {
           <Button
             type="button"
             disabled={isUploading}
-            variant="secondary"
             onClick={() => inputRef.current?.click()}
           >
+            {isUploading && <Spinner data-icon="inline-start" />}
             {isUploading ? "Uploading…" : "Browse files"}
           </Button>
         </div>

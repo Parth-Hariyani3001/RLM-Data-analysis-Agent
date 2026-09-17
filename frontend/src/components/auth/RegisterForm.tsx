@@ -42,7 +42,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           <FieldLabel htmlFor="register-username">Username</FieldLabel>
           <Input
             id="register-username"
-            className="h-10"
+            className="h-10 bg-card"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
             autoComplete="username"
@@ -54,7 +54,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           <FieldLabel htmlFor="register-full-name">Full name</FieldLabel>
           <Input
             id="register-full-name"
-            className="h-10"
+            className="h-10 bg-card"
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
             autoComplete="name"
@@ -66,7 +66,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           <FieldLabel htmlFor="register-password">Password</FieldLabel>
           <Input
             id="register-password"
-            className="h-10"
+            className="h-10 bg-card"
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}

@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, Literal
 
 import pandas as pd
+from pandas.errors import UndefinedVariableError
 
 from ..data_runtime.runtime import DataRuntime
 
@@ -18,6 +20,18 @@ from .models import (
 )
 from .statistics import StatisticsEngine
 from .timeseries import TimeSeriesAnalyzer
+
+_SQLISH_FILTER = re.compile(
+    r"\b(?:ORDER\s+BY|GROUP\s+BY|SELECT|LIMIT|WHERE)\b",
+    re.IGNORECASE,
+)
+
+_FILTER_QUERY_HINT = (
+    "filter_rows uses pandas query syntax, not SQL. "
+    "Example: Price > 10 and Platform == 'PC' "
+    "(use backticks around names with spaces, e.g. `Unit Price` > 10). "
+    'For ranking, use sort_rows("Price", ascending=False, limit=10).'
+)
 
 
 class Analyzer:
@@ -250,20 +264,44 @@ class Analyzer:
         Example:
 
             revenue > 1000 and country == 'India'
-
-        This method should eventually be replaced/guarded
-        when exposed to an LLM.
         """
+
+        if _SQLISH_FILTER.search(expression or ""):
+            raise ValueError(_FILTER_QUERY_HINT)
 
         df = await self.dataframe()
 
-        result = df.query(
-            expression
-        )
+        try:
+            result = df.query(expression)
+        except (SyntaxError, UndefinedVariableError, ValueError) as exc:
+            raise ValueError(
+                f"{_FILTER_QUERY_HINT} Original error: {exc}"
+            ) from exc
 
         return self._serialize_dataframe(
             result
         )
+
+    async def sort_rows(
+        self,
+        column: str,
+        ascending: bool = True,
+        limit: int = 10,
+    ) -> list[dict[str, Any]]:
+        df = await self.dataframe()
+        self._require_column(df, column)
+
+        limit = min(max(int(limit), 0), len(df))
+        if limit == 0:
+            return []
+
+        result = df.sort_values(
+            by=column,
+            ascending=ascending,
+            na_position="last",
+        ).head(limit)
+
+        return self._serialize_dataframe(result)
 
     # ========================================================
     # SAMPLE

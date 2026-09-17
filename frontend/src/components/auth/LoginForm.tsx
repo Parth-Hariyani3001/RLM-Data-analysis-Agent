@@ -38,7 +38,7 @@ export function LoginForm() {
           <FieldLabel htmlFor="login-username">Username</FieldLabel>
           <Input
             id="login-username"
-            className="h-10"
+            className="h-10 bg-card"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
             autoComplete="username"
@@ -50,7 +50,7 @@ export function LoginForm() {
           <FieldLabel htmlFor="login-password">Password</FieldLabel>
           <Input
             id="login-password"
-            className="h-10"
+            className="h-10 bg-card"
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}

@@ -22,7 +22,8 @@ def inspect_csv(path: str) -> dict:
 
     if supports_polars_lazy_scan(encoding):
         row_count = (
-            pl.scan_csv(file_path, **polars_csv_kwargs(encoding, for_lazy=True))
+            pl.scan_csv(
+                file_path, **polars_csv_kwargs(encoding, for_lazy=True))
             .select(pl.len())
             .collect()
             .item()

@@ -1,68 +1,41 @@
 import { useState } from "react"
 import { Navigate } from "react-router-dom"
-import { BrainCircuit } from "lucide-react"
 import { LoginForm } from "@/components/auth/LoginForm"
 import { RegisterForm } from "@/components/auth/RegisterForm"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { BrandMark } from "@/components/layout/BrandMark"
+import { ThemeToggle } from "@/components/layout/ThemeToggle"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { isAuthenticated } from "@/lib/auth"
 
-const PROCESS_STEPS = [
-  {
-    title: "Upload a dataset",
-    description: "Drop a CSV or spreadsheet. We index the schema and rows.",
-  },
-  {
-    title: "Ask in plain language",
-    description: "Type what you want to know — totals, trends, top values.",
-  },
-  {
-    title: "Review code and results",
-    description: "The agent writes Python, runs it, and explains what it found.",
-  },
-] as const
-
-function AgentPreview() {
+function PrintoutPreview() {
   return (
-    <div className="relative hidden flex-col justify-center gap-8 bg-muted/30 p-8 md:flex">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold tracking-tight">
-          From spreadsheet to answer
-        </h2>
-        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-          Upload tabular data, ask a question, and follow the agent as it
-          writes and runs analysis code.
-        </p>
-      </div>
+    <div className="printout relative hidden min-h-full flex-col justify-center overflow-hidden border-r border-border p-8 md:flex lg:p-12">
+      <div className="flex max-w-md flex-col gap-6">
+        <div>
+          <p className="text-sm text-muted-foreground">Sample run</p>
+          <h2 className="mt-2 text-2xl leading-tight font-semibold tracking-tight">
+            Ask the table. Read the code. Keep the answer.
+          </h2>
+        </div>
 
-      <ol className="flex flex-col gap-4">
-        {PROCESS_STEPS.map((step, index) => (
-          <li key={step.title} className="flex gap-3">
-            <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-medium text-primary">
-              {index + 1}
-            </span>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium">{step.title}</span>
-              <span className="text-sm text-muted-foreground">
-                {step.description}
-              </span>
+        <div className="border border-border bg-card/90 p-4 shadow-[4px_4px_0_0_var(--bar)]">
+          <div className="flex flex-col gap-4 font-mono text-[0.8125rem] leading-6">
+            <div className="flex flex-col gap-1">
+              <p className="text-muted-foreground">you</p>
+              <p>Which five regions brought in the most revenue last quarter?</p>
             </div>
-          </li>
-        ))}
-      </ol>
-
-      <div className="rounded-lg border border-border/50 bg-background/50 p-5 font-mono text-xs leading-relaxed">
-        <p className="mb-3 font-sans text-xs text-muted-foreground">
-          Example query
-        </p>
-        <pre className="text-foreground/90">{`df.groupby("region")["revenue"]
+            <div className="flex flex-col gap-1 border-t border-border pt-4">
+              <p className="text-muted-foreground">rlm</p>
+              <pre className="whitespace-pre-wrap text-foreground">{`df.groupby("region")["revenue"]
   .sum()
   .nlargest(5)`}</pre>
+              <p>
+                West leads at $4.1M, then Northeast, South, Midwest, and
+                Mountain.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -76,41 +49,48 @@ export function LoginPage() {
   }
 
   return (
-    <div className="workspace-bg flex min-h-screen flex-col items-center justify-center p-6 md:p-10">
-      <div className="page-enter w-full max-w-md md:max-w-3xl">
-        <Card className="overflow-hidden py-0">
-          <CardContent className="grid p-0 md:grid-cols-2">
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="flex min-w-0 flex-col"
-            >
-              <CardHeader className="gap-4 border-b border-border/40 px-6 pt-6 pb-4 md:px-8">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
-                    <BrainCircuit />
-                  </div>
-                  <CardTitle className="text-base">RLM Agent</CardTitle>
-                </div>
+    <div className="flex min-h-svh bg-background text-foreground">
+      <div className="page-enter grid min-h-svh w-full md:grid-cols-2">
+        <PrintoutPreview />
 
-                <TabsList variant="line">
-                  <TabsTrigger value="login">Sign in</TabsTrigger>
-                  <TabsTrigger value="register">Register</TabsTrigger>
-                </TabsList>
-              </CardHeader>
+        <div className="flex flex-col justify-center bg-card px-6 py-10 sm:px-10">
+          <div className="flex items-center justify-between gap-3">
+            <BrandMark />
+            <ThemeToggle />
+          </div>
+          <p className="mt-6 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            Sign in to upload spreadsheets and run questions against them.
+          </p>
 
-              <div className="px-6 py-6 md:px-8">
-                <TabsContent value="login">
-                  <LoginForm />
-                </TabsContent>
-                <TabsContent value="register">
-                  <RegisterForm onSuccess={() => setActiveTab("login")} />
-                </TabsContent>
-              </div>
-            </Tabs>
-            <AgentPreview />
-          </CardContent>
-        </Card>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="mt-8 w-full max-w-sm"
+          >
+            <TabsList variant="line">
+              <TabsTrigger
+                value="login"
+                className="text-muted-foreground data-active:text-foreground"
+              >
+                Sign in
+              </TabsTrigger>
+              <TabsTrigger
+                value="register"
+                className="text-muted-foreground data-active:text-foreground"
+              >
+                Create account
+              </TabsTrigger>
+            </TabsList>
+            <div className="mt-6">
+              <TabsContent value="login">
+                <LoginForm />
+              </TabsContent>
+              <TabsContent value="register">
+                <RegisterForm onSuccess={() => setActiveTab("login")} />
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
       </div>
     </div>
   )
