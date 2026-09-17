@@ -96,6 +96,7 @@ async def run_agent(
         collector = RunCollector()
         registry = ToolRegistry(tools, collector=collector)
         provider = create_provider()
+        
         engine = RLMEngine(
             provider=provider,
             tool_registry=registry,
