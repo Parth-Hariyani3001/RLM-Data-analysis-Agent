@@ -2,29 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from backend.rlm.engine import RLMEngine
-from backend.rlm.provider import LLMProvider
-from backend.rlm.models import LLMMessage, LLMResponse
+from backend.rlm.parser import ResponseParser
 
 
-class _DummyProvider(LLMProvider):
-    async def generate(self, messages: list[LLMMessage]) -> LLMResponse:
-        return LLMResponse(content="", usage={})
-
-
-class _DummyRegistry:
-    def bind_collector(self, collector) -> None:
-        return None
-
-    def namespace(self) -> dict:
-        return {}
-
-
-def _engine() -> RLMEngine:
-    return RLMEngine(
-        provider=_DummyProvider(),
-        tool_registry=_DummyRegistry(),  # type: ignore[arg-type]
-    )
+@pytest.fixture
+def parser() -> ResponseParser:
+    return ResponseParser()
 
 
 @pytest.mark.parametrize(
@@ -90,12 +73,12 @@ def _engine() -> RLMEngine:
     ],
 )
 def test_parse_response(
+    parser: ResponseParser,
     content: str,
     expected_type: str | None,
     expected_payload: str | None,
 ) -> None:
-    engine = _engine()
-    parsed = engine._parse_response(content)
+    parsed = parser.parse(content)
 
     if expected_type is None:
         assert parsed is None
@@ -107,42 +90,40 @@ def test_parse_response(
     assert payload == expected_payload
 
 
-def test_parse_response_prefers_final_over_code() -> None:
-    engine = _engine()
+def test_parse_response_prefers_final_over_code(parser: ResponseParser) -> None:
     content = (
         "<code>\nprint(1)\n</code>\n"
         "<final>\nDone\n</final>"
     )
-    parsed = engine._parse_response(content)
+    parsed = parser.parse(content)
     assert parsed == ("final", "Done")
 
 
-def test_parse_response_import_prose_recovers_tool_call() -> None:
+def test_parse_response_import_prose_recovers_tool_call(
+    parser: ResponseParser,
+) -> None:
     """Prose mentioning import plus a tool call should recover as code."""
-    engine = _engine()
     content = (
         "I will not import pandas. Instead:\n"
         "print(await describe())\n"
     )
-    parsed = engine._parse_response(content)
+    parsed = parser.parse(content)
     assert parsed is not None
     assert parsed[0] == "code"
     assert "await describe()" in parsed[1]
 
 
-def test_parse_response_raw_import_treated_as_code() -> None:
-    engine = _engine()
+def test_parse_response_raw_import_treated_as_code(parser: ResponseParser) -> None:
     content = "import pandas as pd\ndf.head()"
-    parsed = engine._parse_response(content)
+    parsed = parser.parse(content)
     assert parsed is not None
     assert parsed[0] == "code"
 
 
-def test_parse_response_prose_with_await_word_is_final() -> None:
+def test_parse_response_prose_with_await_word_is_final(parser: ResponseParser) -> None:
     """Natural-language 'await' must not force a code path."""
-    engine = _engine()
     content = "I will await further clarification before answering."
-    parsed = engine._parse_response(content)
+    parsed = parser.parse(content)
     assert parsed == (
         "final",
         "I will await further clarification before answering.",
