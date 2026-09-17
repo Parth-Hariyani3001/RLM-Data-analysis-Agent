@@ -24,6 +24,8 @@ IMPORTANT:
 - If an analysis result is insufficient, perform another analysis step.
 - Keep intermediate reasoning concise.
 - The final answer must be based on actual tool results.
+- You must execute at least one tool before returning <final>.
+- Your first response must be <code> with a tool call — never <final> on the first turn.
 - Do NOT use import statements. Tools are already available in the REPL.
 - Do NOT use markdown code fences for REPL execution — use <code> tags only.
 
@@ -61,11 +63,11 @@ print(await get_columns())
 
 After you have enough evidence → reply with:
 <final>
-**Most expensive game:** Super Mario Bros — **$59.99**
+**Most expensive row:** Item A — **$59.99**
 
 | Name | Price |
 |------|------:|
-| Super Mario Bros | 59.99 |
+| Item A | 59.99 |
 </final>
 
 For ranking / "most expensive" / "highest" style questions:
@@ -123,13 +125,16 @@ User question:
 
 {context_block}
 
-Start by determining what information you need from the dataset.
+Start by querying the dataset with a tool call.
 
-
+Your FIRST response must be <code> with a tool call (for example
+print(await get_columns())). Do not return <final> until after at
+least one tool has executed.
 
 Use the available tools through the Python REPL.
-Reply with <code>...</code> or <final>...</final> only — no markdown code fences for REPL, no imports.
-Format final answers as Markdown inside <final> tags.
+Reply with <code>...</code> only until you have tool results, then
+<final>...</final> for the answer — no markdown code fences for REPL,
+no imports. Format final answers as Markdown inside <final> tags.
 
 """
 

@@ -61,6 +61,28 @@ class RLMEngine:
 
     RAW_OUTPUT_LIMIT = 800
 
+    NO_TOOLS_FAILURE_MESSAGE = (
+        "I could not query the dataset in time. "
+        "Please try your question again."
+    )
+
+    NO_TOOLS_CORRECTION = (
+        "You must inspect or query the dataset before answering. "
+        "Return <code>...</code> with a tool call such as "
+        "print(await get_columns()) or "
+        'print(await sort_rows("Price", ascending=False, limit=10)). '
+        "Do not answer from general knowledge. "
+        "Do not return <final> until you have executed at least one tool."
+    )
+
+    NO_TOOLS_CORRECTION_STRICT = (
+        "Your response must be <code> only — do not return <final> yet. "
+        "Start with exactly:\n\n"
+        "<code>\n"
+        "print(await get_columns())\n"
+        "</code>"
+    )
+
     def __init__(
         self,
         provider: LLMProvider,
@@ -110,6 +132,7 @@ class RLMEngine:
 
         model = getattr(self.provider, "model", None)
         consecutive_format_failures = 0
+        consecutive_no_tool_finals = 0
 
         for iteration in range(
             1,
@@ -120,19 +143,33 @@ class RLMEngine:
             self.collector.current_iteration = iteration
 
             if iteration == self.config.max_iterations:
-                messages.append(
-                    LLMMessage(
-                        role="user",
-                        content=(
-                            "This is your final iteration. "
-                            "Do not execute more tools. "
-                            "Return your best answer now using "
-                            "<final>...</final> only, based on "
-                            "evidence already gathered. If you "
-                            "lack evidence, say what is missing."
-                        ),
+                if self.collector.tool_calls == 0:
+                    messages.append(
+                        LLMMessage(
+                            role="user",
+                            content=(
+                                "This is your final iteration and "
+                                "you have not queried the dataset yet. "
+                                "Return <final>...</final> explaining "
+                                "that you could not retrieve data from "
+                                "the dataset."
+                            ),
+                        )
                     )
-                )
+                else:
+                    messages.append(
+                        LLMMessage(
+                            role="user",
+                            content=(
+                                "This is your final iteration. "
+                                "Do not execute more tools. "
+                                "Return your best answer now using "
+                                "<final>...</final> only, based on "
+                                "evidence already gathered. If you "
+                                "lack evidence, say what is missing."
+                            ),
+                        )
+                    )
 
             response = await self.provider.generate(
                 messages
@@ -217,6 +254,48 @@ class RLMEngine:
 
             consecutive_format_failures = 0
             response_type, payload = parsed
+
+            if response_type == "final" and self.collector.tool_calls == 0:
+                if iteration == self.config.max_iterations:
+                    answer = self.NO_TOOLS_FAILURE_MESSAGE
+                    step = RLMStep(
+                        type=StepType.FINAL,
+                        content=answer,
+                        iteration=iteration,
+                    )
+                    context.add_step(step)
+                    if on_step:
+                        await on_step(step)
+                    usage = self.collector.to_usage()
+                    usage.iterations = iteration
+                    return RLMResult(
+                        answer=answer,
+                        iterations=iteration,
+                        steps=context.steps,
+                        usage=usage,
+                    )
+
+                consecutive_no_tool_finals += 1
+                messages.append(
+                    LLMMessage(
+                        role="assistant",
+                        content=content,
+                    )
+                )
+                correction = (
+                    self.NO_TOOLS_CORRECTION_STRICT
+                    if consecutive_no_tool_finals >= 2
+                    else self.NO_TOOLS_CORRECTION
+                )
+                messages.append(
+                    LLMMessage(
+                        role="user",
+                        content=correction,
+                    )
+                )
+                continue
+
+            consecutive_no_tool_finals = 0
 
             if response_type == "final":
                 step = RLMStep(

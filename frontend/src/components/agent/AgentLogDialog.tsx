@@ -70,7 +70,7 @@ export function AgentLogDialog({
             type="button"
             variant="ghost"
             size="sm"
-            className="w-fit px-0 text-muted-foreground"
+            className="-ml-2.5 w-fit text-muted-foreground"
           />
         }
       >
