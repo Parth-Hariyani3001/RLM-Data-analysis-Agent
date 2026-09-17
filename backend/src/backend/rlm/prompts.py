@@ -96,24 +96,23 @@ def build_initial_prompt(
     context_block = ""
     if dataset_context:
         context_block = f"""
-            Dataset context:
-            {dataset_context}
-        """
-        
-        return f"""
-            User question:
-            {question}
-            {context_block}
+Dataset context:
+{dataset_context}
+"""
 
-            Start by querying the dataset with a tool call.
-            Your FIRST response must be <code> with a tool call (for example
-            print(await get_columns())). Do not return <final> until after at
-            least one tool has executed.
-            Use the available tools through the Python REPL.
-            Reply with <code>...</code> only until you have tool results, then
-            <final>...</final> for the answer — no markdown code fences for REPL,
-            no imports. Format final answers as Markdown inside <final> tags.
-        """
+    return f"""
+User question:
+{question}
+{context_block}
+Start by querying the dataset with a tool call.
+Your FIRST response must be <code> with a tool call (for example
+print(await get_columns())). Do not return <final> until after at
+least one tool has executed.
+Use the available tools through the Python REPL.
+Reply with <code>...</code> only until you have tool results, then
+<final>...</final> for the answer — no markdown code fences for REPL,
+no imports. Format final answers as Markdown inside <final> tags.
+"""
 
 
 def build_system_prompt() -> str:
