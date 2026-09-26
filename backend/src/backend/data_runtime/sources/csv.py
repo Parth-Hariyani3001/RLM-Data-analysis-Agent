@@ -14,7 +14,6 @@ from ..models import (
 
 
 class CSVSource(DataSource):
-
     def __init__(
         self,
         path: str,

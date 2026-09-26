@@ -24,9 +24,7 @@ class DatasetProfiler:
 
     async def profile(self) -> DatasetProfile:
         schema = await self.runtime.schema()
-
         profiles: list[ColumnProfile] = []
-
         for column in schema.columns:
             name = column.name
 

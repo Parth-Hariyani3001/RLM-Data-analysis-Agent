@@ -61,10 +61,15 @@ async def get_current_user(
         username = payload.get("sub")
         if username is None:
             raise credentials_exception
+
     except jwt.PyJWTError as exc:
         raise credentials_exception from exc
 
-    user = await db.scalar(select(User).where(User.username == username))
+    user = await db.scalar(
+        select(User)
+        .where(User.username == username)
+    )
+
     if user is None:
         raise credentials_exception
 
